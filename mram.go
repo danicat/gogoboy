@@ -18,6 +18,6 @@ func (m *MRAM) LoadProgram(p []byte) {
 	m.ram = ram
 }
 
-func (m *MRAM) ReadAddr(a int) byte {
+func (m *MRAM) ReadAddr(a int16) byte {
 	return m.ram[a]
 }

@@ -3,7 +3,7 @@ package main
 import "testing"
 
 func TestFetch(t *testing.T) {
-	input := [...]byte{0xDE}
+	input := []byte{0xDE}
 	expected := byte(0xDE)
 	z := NewZ80(input)
 	op := z.fetch()
@@ -16,11 +16,12 @@ func TestFetch(t *testing.T) {
 }
 
 func TestNOP(t *testing.T) {
-	input := [...]byte{0}
-	expected := int16(1)
+	input := []byte{0, 0}
+	expected := int16(2)
 	z := NewZ80(input)
 	z.step()
+	z.step()
 	if z.PC != expected {
-		t.Fatalf("expected %x, got %x", 1, z.PC)
+		t.Fatalf("expected %d, got %d", 2, z.PC)
 	}
 }
