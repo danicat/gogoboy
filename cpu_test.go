@@ -3,7 +3,7 @@ package main
 import "testing"
 
 func TestFetch(t *testing.T) {
-	input := []byte{0xDE}
+	input := []byte{0xDE, 0xAD}
 	expected := byte(0xDE)
 	z := NewZ80(input)
 	op := z.fetch()
@@ -22,6 +22,20 @@ func TestNOP(t *testing.T) {
 	z.step()
 	z.step()
 	if z.PC != expected {
-		t.Fatalf("expected %d, got %d", 2, z.PC)
+		t.Fatalf("expected %d, got %d", expected, z.PC)
+	}
+}
+
+// 8-Bit Load
+func TestLDB(t *testing.T) {
+	input := []byte{0x06, 0xDE}
+	var expected byte = 0xDE
+	z := NewZ80(input)
+	z.step()
+	if z.PC != 2 {
+		t.Fatalf("expected PC=%d, got PC=%d", 2, z.PC)
+	}
+	if z.B != expected {
+		t.Fatalf("expected B=%d, got %d", expected, z.B)
 	}
 }

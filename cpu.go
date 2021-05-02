@@ -3,6 +3,7 @@ package main
 // Z80 holds the internal representation of the Z80 CPU registers
 type Z80 struct {
 	PC  int16
+	B   byte
 	ram *MRAM
 }
 
@@ -19,7 +20,9 @@ func NewZ80(program []byte) *Z80 {
 func (z *Z80) step() {
 	op := z.fetch()
 	switch op {
-	case 0: // NOP
+	case 0x00: // NOP
+	case 0x06: // LD B, n
+		z.B = z.fetch()
 	}
 }
 
