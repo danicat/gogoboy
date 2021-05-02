@@ -14,3 +14,13 @@ func TestFetch(t *testing.T) {
 		t.Fatalf("expected %x, got %x", 1, z.PC)
 	}
 }
+
+func TestNOP(t *testing.T) {
+	input := [...]byte{0}
+	expected := int16(1)
+	z := NewZ80(input)
+	z.step()
+	if z.PC != expected {
+		t.Fatalf("expected %x, got %x", 1, z.PC)
+	}
+}

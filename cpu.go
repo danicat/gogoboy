@@ -13,6 +13,14 @@ func NewZ80(program [1]byte) *Z80 {
 	}
 }
 
+// step runs one instruction at a time
+func (z *Z80) step() {
+	op := z.fetch()
+	switch op {
+	case 0: // NOP
+	}
+}
+
 func (z *Z80) fetch() byte {
 	op := z.ram[z.PC]
 	z.PC++
