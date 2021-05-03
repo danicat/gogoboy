@@ -189,11 +189,25 @@ func TestADDA(t *testing.T) {
 			expectedF: 0b00000000,
 		},
 		{
-			name:      "ADD A,A",
+			name:      "ADD A,A ZFlag Set",
 			program:   []byte{0x87},
 			A:         0x00,
 			expectedA: 0x00,
 			expectedF: 0b10000000,
+		},
+		{
+			name:      "ADD A,A HFlag Set",
+			program:   []byte{0x87},
+			A:         0b00001000,
+			expectedA: 0b00010000,
+			expectedF: 0b00100000,
+		},
+		{
+			name:      "ADD A,A CFlag Set",
+			program:   []byte{0x87},
+			A:         0b10000000,
+			expectedA: 0b00000000,
+			expectedF: 0b00010000,
 		},
 	}
 
