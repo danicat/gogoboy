@@ -165,7 +165,7 @@ func TestLDA(t *testing.T) {
 }
 
 // 8-Bit ALU
-func TestADDA(t *testing.T) {
+func TestADD(t *testing.T) {
 	z := NewZ80(nil)
 
 	tbl := []struct {
@@ -208,6 +208,54 @@ func TestADDA(t *testing.T) {
 			A:         0b10000000,
 			expectedA: 0b00000000,
 			expectedF: 0b00010000,
+		},
+		{
+			name:      "ADD A,B",
+			program:   []byte{0x80},
+			A:         0b00001100,
+			B:         0b00001000,
+			expectedA: 0b00010100,
+			expectedF: 0b00100000,
+		},
+		{
+			name:      "ADD A,C",
+			program:   []byte{0x81},
+			A:         0b00001100,
+			C:         0b00010000,
+			expectedA: 0b00011100,
+			expectedF: 0b00000000,
+		},
+		{
+			name:      "ADD A,D",
+			program:   []byte{0x82},
+			A:         0b10001100,
+			D:         0b10001000,
+			expectedA: 0b00010100,
+			expectedF: 0b00110000,
+		},
+		{
+			name:      "ADD A,E",
+			program:   []byte{0x83},
+			A:         0b00001100,
+			E:         0b00001100,
+			expectedA: 0b00011000,
+			expectedF: 0b00100000,
+		},
+		{
+			name:      "ADD A,H",
+			program:   []byte{0x84},
+			A:         0b00001100,
+			H:         0b00000011,
+			expectedA: 0b00001111,
+			expectedF: 0b00000000,
+		},
+		{
+			name:      "ADD A,L",
+			program:   []byte{0x85},
+			A:         0b00001100,
+			L:         0b00001000,
+			expectedA: 0b00010100,
+			expectedF: 0b00100000,
 		},
 	}
 

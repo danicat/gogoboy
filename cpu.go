@@ -40,8 +40,7 @@ func (z *Z80) step() {
 	case 0x00: // NOP
 
 	// 8-bit load
-
-	case 0x06: // LD B, n
+	case 0x06:
 		z.B = z.fetch()
 	case 0x0E: // LD C, n
 		z.C = z.fetch()
@@ -68,9 +67,22 @@ func (z *Z80) step() {
 		z.A = z.L
 
 	// 8-bit ALU
-	case 0x87:
+	case 0x87: // ADD A
 		z.A = z.add8(z.A, z.A)
+	case 0x80: // ADD B
+		z.A = z.add8(z.A, z.B)
+	case 0x81: // ADD C
+		z.A = z.add8(z.A, z.C)
+	case 0x82: // ADD D
+		z.A = z.add8(z.A, z.D)
+	case 0x83: // ADD E
+		z.A = z.add8(z.A, z.E)
+	case 0x84: // ADD H
+		z.A = z.add8(z.A, z.H)
+	case 0x85: // ADD L
+		z.A = z.add8(z.A, z.L)
 	}
+
 }
 
 func (z *Z80) add8(l, r byte) byte {
