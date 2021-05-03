@@ -39,3 +39,61 @@ func TestLDB(t *testing.T) {
 		t.Fatalf("expected B=%d, got %d", expected, z.B)
 	}
 }
+
+func TestLDn(t *testing.T) {
+	z := NewZ80(nil)
+	tbl := []struct {
+		name     string
+		program  []byte
+		register *byte
+		expected byte
+	}{
+		{
+			"LD B,n",
+			[]byte{0x06, 0xDE},
+			&z.B,
+			0xDE,
+		},
+		{
+			"LD C,n",
+			[]byte{0x0E, 0xAD},
+			&z.C,
+			0xAD,
+		},
+		{
+			"LD D,n",
+			[]byte{0x16, 0xBE},
+			&z.D,
+			0xBE,
+		},
+		{
+			"LD E,n",
+			[]byte{0x1E, 0xEF},
+			&z.E,
+			0xEF,
+		},
+		{
+			"LD H,n",
+			[]byte{0x26, 0xCA},
+			&z.H,
+			0xCA,
+		},
+		{
+			"LD L,n",
+			[]byte{0x2E, 0xFE},
+			&z.L,
+			0xFE,
+		},
+	}
+
+	for _, testcase := range tbl {
+		t.Run(testcase.name, func(t *testing.T) {
+			z.Reset()
+			z.LoadProgram(testcase.program)
+			z.step()
+			if *testcase.register != testcase.expected {
+				t.Errorf("expected %x, got %x", testcase.expected, *testcase.register)
+			}
+		})
+	}
+}
