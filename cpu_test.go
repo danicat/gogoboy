@@ -98,8 +98,6 @@ func TestLDn(t *testing.T) {
 	}
 }
 
-// 8-Bit ALU
-
 func TestLDA(t *testing.T) {
 	z := NewZ80(nil)
 
@@ -162,6 +160,66 @@ func TestLDA(t *testing.T) {
 			if z.A != testcase.expected {
 				t.Errorf("expected %x, got %x", testcase.expected, z.A)
 			}
+		})
+	}
+}
+
+// 8-Bit ALU
+func TestADDA(t *testing.T) {
+	z := NewZ80(nil)
+
+	tbl := []struct {
+		name      string
+		program   []byte
+		A         byte
+		B         byte
+		C         byte
+		D         byte
+		E         byte
+		H         byte
+		L         byte
+		expectedA byte
+		expectedF byte
+	}{
+		{
+			name:      "ADD A,A",
+			program:   []byte{0x87},
+			A:         0x01,
+			expectedA: 0x02,
+			expectedF: 0b00000000,
+		},
+		{
+			name:      "ADD A,A",
+			program:   []byte{0x87},
+			A:         0x00,
+			expectedA: 0x00,
+			expectedF: 0b10000000,
+		},
+	}
+
+	for _, testcase := range tbl {
+		t.Run(testcase.name, func(t *testing.T) {
+			z.Reset()
+			z.A = testcase.A
+			z.B = testcase.B
+			z.C = testcase.C
+			z.D = testcase.D
+			z.E = testcase.E
+			z.H = testcase.H
+			z.L = testcase.L
+
+			z.LoadProgram(testcase.program)
+
+			z.step()
+
+			if z.A != testcase.expectedA {
+				t.Errorf("expected %x, got %x", testcase.expectedA, z.A)
+			}
+
+			if z.F != testcase.expectedF {
+				t.Errorf("expected flags %b, got %b", testcase.expectedF, z.F)
+			}
+
 		})
 	}
 }

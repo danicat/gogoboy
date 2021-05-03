@@ -2,9 +2,9 @@ package main
 
 // Z80 holds the internal representation of the Z80 CPU registers
 type Z80 struct {
-	PC                  int16
-	A, B, C, D, E, H, L byte
-	ram                 *MRAM
+	PC                     int16
+	A, F, B, C, D, E, H, L byte
+	ram                    *MRAM
 }
 
 // NewZ80 creates a new Z80 instance that runs a given program
@@ -24,6 +24,7 @@ func (z *Z80) LoadProgram(p []byte) {
 func (z *Z80) Reset() {
 	z.PC = 0
 	z.A = 0
+	z.F = 0
 	z.B = 0
 	z.C = 0
 	z.D = 0
@@ -37,6 +38,9 @@ func (z *Z80) step() {
 	op := z.fetch()
 	switch op {
 	case 0x00: // NOP
+
+	// 8-bit load
+
 	case 0x06: // LD B, n
 		z.B = z.fetch()
 	case 0x0E: // LD C, n
@@ -62,7 +66,74 @@ func (z *Z80) step() {
 		z.A = z.H
 	case 0x7D: // LD A, L
 		z.A = z.L
+
+	// 8-bit ALU
+	case 0x87:
+		z.A = z.add8(z.A, z.A)
 	}
+}
+
+func (z *Z80) add8(l, r byte) byte {
+	var res int16 = int16(l) + int16(r)
+	if res == 0 {
+		z.SetZFlag()
+	}
+	z.ResetNFlag()
+	if l&0x0F+r&0x0F > 0x0F {
+		z.SetHFlag()
+	}
+	if res > 0xFF {
+		z.SetCFlag()
+	}
+	return byte(res)
+}
+
+func (z *Z80) SetZFlag() {
+	z.F |= 0b10000000
+}
+
+func (z *Z80) ResetZFlag() {
+	z.F &= 0b01111111
+}
+
+func (z *Z80) ZFlag() bool {
+	return z.F&0b10000000 > 0
+}
+
+func (z *Z80) SetNFlag() {
+	z.F |= 0b01000000
+}
+
+func (z *Z80) ResetNFlag() {
+	z.F &= 0b10111111
+}
+
+func (z *Z80) NFlag() bool {
+	return z.F&0b01000000 > 0
+}
+
+func (z *Z80) SetHFlag() {
+	z.F |= 0b00100000
+}
+
+func (z *Z80) ResetHFlag() {
+	z.F &= 0b11011111
+}
+
+func (z *Z80) HFlag() bool {
+	return z.F&0b00100000 > 0
+}
+
+func (z *Z80) SetCFlag() {
+	z.F |= 0b00010000
+}
+
+func (z *Z80) ResetCFlag() {
+	z.F &= 0b11101111
+}
+
+func (z *Z80) CFlag() bool {
+	return z.F&0b00010000 > 0
 }
 
 func (z *Z80) fetch() byte {
