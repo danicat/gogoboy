@@ -2,9 +2,9 @@ package main
 
 // Z80 holds the internal representation of the Z80 CPU registers
 type Z80 struct {
-	PC               int16
-	B, C, D, E, H, L byte
-	ram              *MRAM
+	PC                  int16
+	A, B, C, D, E, H, L byte
+	ram                 *MRAM
 }
 
 // NewZ80 creates a new Z80 instance that runs a given program
@@ -23,6 +23,7 @@ func (z *Z80) LoadProgram(p []byte) {
 
 func (z *Z80) Reset() {
 	z.PC = 0
+	z.A = 0
 	z.B = 0
 	z.C = 0
 	z.D = 0
@@ -48,6 +49,19 @@ func (z *Z80) step() {
 		z.H = z.fetch()
 	case 0x2E: // LD L, n
 		z.L = z.fetch()
+	case 0x7F: // LD A, A
+	case 0x78: // LD A, B
+		z.A = z.B
+	case 0x79: // LD A, C
+		z.A = z.C
+	case 0x7A: // LD A, D
+		z.A = z.D
+	case 0x7B: // LD A, E
+		z.A = z.E
+	case 0x7C: // LD A, H
+		z.A = z.H
+	case 0x7D: // LD A, L
+		z.A = z.L
 	}
 }
 
