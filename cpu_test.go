@@ -2,10 +2,26 @@ package main
 
 import "testing"
 
+type testcase struct {
+	name           string
+	program        []byte
+	A              byte
+	B              byte
+	C              byte
+	D              byte
+	E              byte
+	H              byte
+	L              byte
+	expectedA      byte
+	expectedF      byte
+	expectedCycles int
+}
+
 func TestFetch(t *testing.T) {
 	input := []byte{0xDE, 0xAD}
 	expected := byte(0xDE)
-	z := NewZ80(input)
+	z := NewZ80()
+	z.LoadProgram(input)
 	op := z.fetch()
 	if op != expected {
 		t.Fatalf("expected %x, got %x", expected, op)
@@ -18,7 +34,8 @@ func TestFetch(t *testing.T) {
 func TestNOP(t *testing.T) {
 	input := []byte{0, 0}
 	expected := int16(2)
-	z := NewZ80(input)
+	z := NewZ80()
+	z.LoadProgram(input)
 	z.step()
 	z.step()
 	if z.PC != expected {
@@ -30,7 +47,8 @@ func TestNOP(t *testing.T) {
 func TestLDB(t *testing.T) {
 	input := []byte{0x06, 0xDE}
 	var expected byte = 0xDE
-	z := NewZ80(input)
+	z := NewZ80()
+	z.LoadProgram(input)
 	z.step()
 	if z.PC != 2 {
 		t.Fatalf("expected PC=%d, got PC=%d", 2, z.PC)
@@ -41,13 +59,19 @@ func TestLDB(t *testing.T) {
 }
 
 func TestLDn(t *testing.T) {
-	z := NewZ80(nil)
+	z := NewZ80()
 	tbl := []struct {
 		name     string
 		program  []byte
 		register *byte
 		expected byte
 	}{
+		{
+			"LD A, n",
+			[]byte{0x3E, 0xAA},
+			&z.A,
+			0xAA,
+		},
 		{
 			"LD B,n",
 			[]byte{0x06, 0xDE},
@@ -86,20 +110,20 @@ func TestLDn(t *testing.T) {
 		},
 	}
 
-	for _, testcase := range tbl {
-		t.Run(testcase.name, func(t *testing.T) {
+	for _, tc := range tbl {
+		t.Run(tc.name, func(t *testing.T) {
 			z.Reset()
-			z.LoadProgram(testcase.program)
+			z.LoadProgram(tc.program)
 			z.step()
-			if *testcase.register != testcase.expected {
-				t.Errorf("expected %x, got %x", testcase.expected, *testcase.register)
+			if *tc.register != tc.expected {
+				t.Errorf("expected %x, got %x", tc.expected, *tc.register)
 			}
 		})
 	}
 }
 
 func TestLDA(t *testing.T) {
-	z := NewZ80(nil)
+	z := NewZ80()
 
 	tbl := []struct {
 		name     string
@@ -143,8 +167,8 @@ func TestLDA(t *testing.T) {
 		},
 	}
 
-	for _, testcase := range tbl {
-		t.Run(testcase.name, func(t *testing.T) {
+	for _, tc := range tbl {
+		t.Run(tc.name, func(t *testing.T) {
 			z.Reset()
 			z.A = 0xAA
 			z.B = 0xDE
@@ -154,11 +178,11 @@ func TestLDA(t *testing.T) {
 			z.H = 0xCA
 			z.L = 0xFE
 
-			z.LoadProgram(testcase.program)
+			z.LoadProgram(tc.program)
 
 			z.step()
-			if z.A != testcase.expected {
-				t.Errorf("expected %x, got %x", testcase.expected, z.A)
+			if z.A != tc.expected {
+				t.Errorf("expected %x, got %x", tc.expected, z.A)
 			}
 		})
 	}
@@ -166,21 +190,9 @@ func TestLDA(t *testing.T) {
 
 // 8-Bit ALU
 func TestADD(t *testing.T) {
-	z := NewZ80(nil)
+	z := NewZ80()
 
-	tbl := []struct {
-		name      string
-		program   []byte
-		A         byte
-		B         byte
-		C         byte
-		D         byte
-		E         byte
-		H         byte
-		L         byte
-		expectedA byte
-		expectedF byte
-	}{
+	tbl := []testcase{
 		{
 			name:      "ADD A,A",
 			program:   []byte{0x87},
@@ -259,29 +271,61 @@ func TestADD(t *testing.T) {
 		},
 	}
 
-	for _, testcase := range tbl {
-		t.Run(testcase.name, func(t *testing.T) {
+	for _, tc := range tbl {
+		t.Run(tc.name, func(t *testing.T) {
 			z.Reset()
-			z.A = testcase.A
-			z.B = testcase.B
-			z.C = testcase.C
-			z.D = testcase.D
-			z.E = testcase.E
-			z.H = testcase.H
-			z.L = testcase.L
+			z.A = tc.A
+			z.B = tc.B
+			z.C = tc.C
+			z.D = tc.D
+			z.E = tc.E
+			z.H = tc.H
+			z.L = tc.L
 
-			z.LoadProgram(testcase.program)
+			z.LoadProgram(tc.program)
 
 			z.step()
 
-			if z.A != testcase.expectedA {
-				t.Errorf("expected %x, got %x", testcase.expectedA, z.A)
+			if z.A != tc.expectedA {
+				t.Errorf("expected %x, got %x", tc.expectedA, z.A)
 			}
 
-			if z.F != testcase.expectedF {
-				t.Errorf("expected flags %b, got %b", testcase.expectedF, z.F)
+			if z.F != tc.expectedF {
+				t.Errorf("expected flags %b, got %b", tc.expectedF, z.F)
 			}
+		})
+	}
+}
 
+func TestCycleLimit(t *testing.T) {
+	tbl := []testcase{
+		{
+			name:           "LD A,0x10 LD B,0x20 ADD A,B",
+			program:        []byte{0x3E, 0x10, 0x06, 0x20, 0x80},
+			expectedA:      0x30,
+			expectedF:      0b00000000,
+			expectedCycles: 100,
+		},
+	}
+
+	z := NewZ80()
+
+	for _, tc := range tbl {
+		t.Run(tc.name, func(t *testing.T) {
+			z.Reset()
+			z.SetMaxCycles(100)
+			z.LoadProgram(tc.program)
+			z.Run()
+
+			if z.A != tc.expectedA {
+				t.Errorf("expected A=%x, got %x", tc.expectedA, z.A)
+			}
+			if z.F != tc.expectedF {
+				t.Errorf("expected flags %b, got %b", tc.expectedF, z.F)
+			}
+			if z.cycles != tc.expectedCycles {
+				t.Errorf("expected cycles=%d, got %d", tc.expectedCycles, z.cycles)
+			}
 		})
 	}
 }

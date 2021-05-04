@@ -1,19 +1,27 @@
 package main
 
+import "log"
+
 // Z80 holds the internal representation of the Z80 CPU registers
 type Z80 struct {
 	PC                     int16
 	A, F, B, C, D, E, H, L byte
 	ram                    *MRAM
+	cycles                 int
+	maxCycles              int
 }
 
-// NewZ80 creates a new Z80 instance that runs a given program
-func NewZ80(program []byte) *Z80 {
+// NewZ80 creates a new Z80 instance
+func NewZ80() *Z80 {
 	r := NewMRAM()
-	r.LoadProgram(program)
 	return &Z80{
 		ram: r,
 	}
+}
+
+// SetMaxCycles set the maximum number of cycles for the Run function to process. Max cycles of 0 indicates no limit.
+func (z *Z80) SetMaxCycles(max int) {
+	z.maxCycles = max
 }
 
 func (z *Z80) LoadProgram(p []byte) {
@@ -33,56 +41,67 @@ func (z *Z80) Reset() {
 	z.L = 0
 }
 
+func (z *Z80) Run() {
+	for z.cycles < z.maxCycles || z.maxCycles == 0 {
+		z.step()
+	}
+}
+
 // step runs one instruction at a time
 func (z *Z80) step() {
 	op := z.fetch()
 	switch op {
-	case 0x00: // NOP
+	case 0x00:
 
-	// 8-bit load
+	case 0x3E:
+		z.A = z.fetch()
 	case 0x06:
 		z.B = z.fetch()
-	case 0x0E: // LD C, n
+	case 0x0E:
 		z.C = z.fetch()
-	case 0x16: // LD D, n
+	case 0x16:
 		z.D = z.fetch()
-	case 0x1E: // LD E, n
+	case 0x1E:
 		z.E = z.fetch()
-	case 0x26: // LD H, n
+	case 0x26:
 		z.H = z.fetch()
-	case 0x2E: // LD L, n
+	case 0x2E:
 		z.L = z.fetch()
-	case 0x7F: // LD A, A
-	case 0x78: // LD A, B
+	case 0x7F:
+
+	case 0x78:
 		z.A = z.B
-	case 0x79: // LD A, C
+	case 0x79:
 		z.A = z.C
-	case 0x7A: // LD A, D
+	case 0x7A:
 		z.A = z.D
-	case 0x7B: // LD A, E
+	case 0x7B:
 		z.A = z.E
-	case 0x7C: // LD A, H
+	case 0x7C:
 		z.A = z.H
-	case 0x7D: // LD A, L
+	case 0x7D:
 		z.A = z.L
 
-	// 8-bit ALU
-	case 0x87: // ADD A
+	case 0x87:
 		z.A = z.add8(z.A, z.A)
-	case 0x80: // ADD B
+	case 0x80:
 		z.A = z.add8(z.A, z.B)
-	case 0x81: // ADD C
+	case 0x81:
 		z.A = z.add8(z.A, z.C)
-	case 0x82: // ADD D
+	case 0x82:
 		z.A = z.add8(z.A, z.D)
-	case 0x83: // ADD E
+	case 0x83:
 		z.A = z.add8(z.A, z.E)
-	case 0x84: // ADD H
+	case 0x84:
 		z.A = z.add8(z.A, z.H)
-	case 0x85: // ADD L
+	case 0x85:
 		z.A = z.add8(z.A, z.L)
+
+	default:
+		log.Fatalf("opcode not implemented: %x", op)
 	}
 
+	z.cycles += opcodes[op].cycles
 }
 
 func (z *Z80) add8(l, r byte) byte {
