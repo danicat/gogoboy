@@ -23,6 +23,8 @@ var opcodes = map[byte]struct {
 	0x7C: {"LD A, H", 4, func(z *Z80) { z.A = z.H }},
 	0x7D: {"LD A, L", 4, func(z *Z80) { z.A = z.L }},
 
+	0x66: {"LD H, (HL)", 8, func(z *Z80) { z.H = z.ram.ReadAddr8(z.H, z.L) }},
+
 	0x87: {"ADD A, A", 4, func(z *Z80) { z.A = z.add8(z.A, z.A, false) }},
 	0x80: {"ADD A, B", 4, func(z *Z80) { z.A = z.add8(z.A, z.B, false) }},
 	0x81: {"ADD A, C", 4, func(z *Z80) { z.A = z.add8(z.A, z.C, false) }},

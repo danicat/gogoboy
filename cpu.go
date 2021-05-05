@@ -6,7 +6,7 @@ import (
 
 // Z80 holds the internal representation of the Z80 CPU registers
 type Z80 struct {
-	PC                     int16
+	PC                     uint16
 	A, F, B, C, D, E, H, L byte
 	ram                    *MRAM
 	cycles                 int

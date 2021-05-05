@@ -4,7 +4,7 @@ import "testing"
 
 func TestNOP(t *testing.T) {
 	input := []byte{0, 0}
-	expected := int16(2)
+	expected := uint16(2)
 	z := NewZ80()
 	z.LoadProgram(input)
 	z.step()
@@ -29,7 +29,7 @@ func TestLDB(t *testing.T) {
 	}
 }
 
-func TestLDn(t *testing.T) {
+func TestLD(t *testing.T) {
 	z := NewZ80()
 	tbl := []struct {
 		name     string
@@ -44,37 +44,37 @@ func TestLDn(t *testing.T) {
 			0xAA,
 		},
 		{
-			"LD B,n",
+			"LD B, n",
 			[]byte{0x06, 0xDE},
 			&z.B,
 			0xDE,
 		},
 		{
-			"LD C,n",
+			"LD C, n",
 			[]byte{0x0E, 0xAD},
 			&z.C,
 			0xAD,
 		},
 		{
-			"LD D,n",
+			"LD D, n",
 			[]byte{0x16, 0xBE},
 			&z.D,
 			0xBE,
 		},
 		{
-			"LD E,n",
+			"LD E, n",
 			[]byte{0x1E, 0xEF},
 			&z.E,
 			0xEF,
 		},
 		{
-			"LD H,n",
+			"LD H, n",
 			[]byte{0x26, 0xCA},
 			&z.H,
 			0xCA,
 		},
 		{
-			"LD L,n",
+			"LD L, n",
 			[]byte{0x2E, 0xFE},
 			&z.L,
 			0xFE,
@@ -96,67 +96,129 @@ func TestLDn(t *testing.T) {
 func TestLDA(t *testing.T) {
 	z := NewZ80()
 
-	tbl := []struct {
-		name     string
-		program  []byte
-		expected byte
-	}{
+	tbl := []testcase{
 		{
-			"LD A,A",
-			[]byte{0x7F},
-			0xAA,
+			name:      "LD A,A",
+			program:   []byte{0x7F},
+			A:         0xAA,
+			expectedA: 0xAA,
 		},
 		{
-			"LD A,B",
-			[]byte{0x78},
-			0xDE,
+			name:      "LD A,B",
+			program:   []byte{0x78},
+			B:         0xDE,
+			expectedA: 0xDE,
 		},
 		{
-			"LD A,C",
-			[]byte{0x79},
-			0xAD,
+			name:      "LD A,C",
+			program:   []byte{0x79},
+			C:         0xAD,
+			expectedA: 0xAD,
 		},
 		{
-			"LD A,D",
-			[]byte{0x7A},
-			0xBE,
+			name:      "LD A,D",
+			program:   []byte{0x7A},
+			D:         0xBE,
+			expectedA: 0xBE,
 		},
 		{
-			"LD A,E",
-			[]byte{0x7B},
-			0xEF,
+			name:      "LD A,E",
+			program:   []byte{0x7B},
+			E:         0xEF,
+			expectedA: 0xEF,
 		},
 		{
-			"LD A,H",
-			[]byte{0x7C},
-			0xCA,
+			name:      "LD A,H",
+			program:   []byte{0x7C},
+			H:         0xCA,
+			expectedA: 0xCA,
 		},
 		{
-			"LD A,L",
-			[]byte{0x7D},
-			0xFE,
+			name:      "LD A,L",
+			program:   []byte{0x7D},
+			L:         0xFE,
+			expectedA: 0xFE,
 		},
 	}
 
 	for _, tc := range tbl {
 		t.Run(tc.name, func(t *testing.T) {
 			z.Reset()
-			z.A = 0xAA
-			z.B = 0xDE
-			z.C = 0xAD
-			z.D = 0xBE
-			z.E = 0xEF
-			z.H = 0xCA
-			z.L = 0xFE
+			z.A = tc.A
+			z.F = tc.F
+			z.B = tc.B
+			z.C = tc.C
+			z.D = tc.D
+			z.E = tc.E
+			z.H = tc.H
+			z.L = tc.L
 
 			z.LoadProgram(tc.program)
 
-			z.step()
-			if z.A != tc.expected {
-				t.Errorf("expected %x, got %x", tc.expected, z.A)
+			err := z.step()
+			if err != nil {
+				t.Errorf("expected no error, got: %s", err)
+			}
+
+			if z.A != tc.expectedA {
+				t.Errorf("expected %x, got %x", tc.expectedA, z.A)
+			}
+
+			if z.F != tc.expectedF {
+				t.Errorf("expected flags %b, got %b", tc.expectedF, z.F)
 			}
 		})
 	}
+}
+
+func TestLDH(t *testing.T) {
+	z := NewZ80()
+
+	tbl := []testcase{
+		{
+			name:      "LD H, (HL)",
+			program:   []byte{0x66, 0x00, 0x00, 0xCA, 0xFE},
+			L:         4,
+			expectedH: 0xFE,
+		},
+		{
+			name:      "LD H, (HL)",
+			program:   []byte{0x66, 0x00, 0x00, 0xCA, 0xFE},
+			H:         4,
+			L:         1,
+			expectedH: 0x00,
+		},
+	}
+
+	for _, tc := range tbl {
+		t.Run(tc.name, func(t *testing.T) {
+			z.Reset()
+			z.A = tc.A
+			z.F = tc.F
+			z.B = tc.B
+			z.C = tc.C
+			z.D = tc.D
+			z.E = tc.E
+			z.H = tc.H
+			z.L = tc.L
+
+			z.LoadProgram(tc.program)
+
+			err := z.step()
+			if err != nil {
+				t.Errorf("expected no error, got: %s", err)
+			}
+
+			if z.H != tc.expectedH {
+				t.Errorf("expected %x, got %x", tc.expectedH, z.H)
+			}
+
+			if z.F != tc.expectedF {
+				t.Errorf("expected flags %b, got %b", tc.expectedF, z.F)
+			}
+		})
+	}
+
 }
 
 // 8-Bit ALU

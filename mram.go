@@ -1,6 +1,6 @@
 package main
 
-const MainRAMSize = 8192
+const MainRAMSize = 65536
 
 type MRAM struct {
 	ram [MainRAMSize]byte
@@ -18,6 +18,11 @@ func (m *MRAM) LoadProgram(p []byte) {
 	m.ram = ram
 }
 
-func (m *MRAM) ReadAddr(a int16) byte {
+func (m *MRAM) ReadAddr8(hi, lo byte) byte {
+	a := uint16(hi)*0x100 + uint16(lo)
+	return m.ReadAddr(a)
+}
+
+func (m *MRAM) ReadAddr(a uint16) byte {
 	return m.ram[a]
 }

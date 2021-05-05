@@ -15,6 +15,7 @@ type testcase struct {
 	L              byte
 	expectedA      byte
 	expectedF      byte
+	expectedH      byte
 	expectedCycles int
 }
 
