@@ -1,6 +1,8 @@
 package main
 
-import "log"
+import (
+	"fmt"
+)
 
 // Z80 holds the internal representation of the Z80 CPU registers
 type Z80 struct {
@@ -41,37 +43,60 @@ func (z *Z80) Reset() {
 	z.L = 0
 }
 
-func (z *Z80) Run() {
+func (z *Z80) Run() error {
 	for z.cycles < z.maxCycles || z.maxCycles == 0 {
-		z.step()
+		err := z.step()
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // step runs one instruction at a time
-func (z *Z80) step() {
+func (z *Z80) step() error {
 	op := z.fetch()
 
 	inst, ok := opcodes[op]
 	if !ok {
-		log.Fatalf("opcode not implemented: %x", op)
+		return fmt.Errorf("opcode not implemented: %X", op)
 	}
 
 	z.cycles += inst.cycles
 	inst.exec(z)
+
+	return nil
 }
 
-func (z *Z80) add8(l, r byte) byte {
+func (z *Z80) add8(l, r byte, carry bool) byte {
 	var res int16 = int16(l) + int16(r)
+	var halfCarry = l&0x0F + r&0x0F
+
+	if carry {
+		res++
+		halfCarry++
+	}
+
 	if res == 0 {
 		z.SetZFlag()
+	} else {
+		z.ResetZFlag()
 	}
+
 	z.ResetNFlag()
-	if l&0x0F+r&0x0F > 0x0F {
+
+	if halfCarry > 0x0F {
 		z.SetHFlag()
+	} else {
+		z.ResetHFlag()
 	}
+
 	if res > 0xFF {
 		z.SetCFlag()
+	} else {
+		z.ResetCFlag()
 	}
+
 	return byte(res)
 }
 
