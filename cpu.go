@@ -50,58 +50,14 @@ func (z *Z80) Run() {
 // step runs one instruction at a time
 func (z *Z80) step() {
 	op := z.fetch()
-	switch op {
-	case 0x00:
 
-	case 0x3E:
-		z.A = z.fetch()
-	case 0x06:
-		z.B = z.fetch()
-	case 0x0E:
-		z.C = z.fetch()
-	case 0x16:
-		z.D = z.fetch()
-	case 0x1E:
-		z.E = z.fetch()
-	case 0x26:
-		z.H = z.fetch()
-	case 0x2E:
-		z.L = z.fetch()
-	case 0x7F:
-
-	case 0x78:
-		z.A = z.B
-	case 0x79:
-		z.A = z.C
-	case 0x7A:
-		z.A = z.D
-	case 0x7B:
-		z.A = z.E
-	case 0x7C:
-		z.A = z.H
-	case 0x7D:
-		z.A = z.L
-
-	case 0x87:
-		z.A = z.add8(z.A, z.A)
-	case 0x80:
-		z.A = z.add8(z.A, z.B)
-	case 0x81:
-		z.A = z.add8(z.A, z.C)
-	case 0x82:
-		z.A = z.add8(z.A, z.D)
-	case 0x83:
-		z.A = z.add8(z.A, z.E)
-	case 0x84:
-		z.A = z.add8(z.A, z.H)
-	case 0x85:
-		z.A = z.add8(z.A, z.L)
-
-	default:
+	inst, ok := opcodes[op]
+	if !ok {
 		log.Fatalf("opcode not implemented: %x", op)
 	}
 
-	z.cycles += opcodes[op].cycles
+	z.cycles += inst.cycles
+	inst.exec(z)
 }
 
 func (z *Z80) add8(l, r byte) byte {

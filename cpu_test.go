@@ -300,10 +300,10 @@ func TestADD(t *testing.T) {
 func TestCycleLimit(t *testing.T) {
 	tbl := []testcase{
 		{
-			name:           "LD A,0x10 LD B,0x20 ADD A,B",
-			program:        []byte{0x3E, 0x10, 0x06, 0x20, 0x80},
-			expectedA:      0x30,
-			expectedF:      0b00000000,
+			name:           "LD A,0x1F LD B,0x21 ADD A,B",
+			program:        []byte{0x3E, 0x1F, 0x06, 0x21, 0x80},
+			expectedA:      0x40,
+			expectedF:      0b00100000,
 			expectedCycles: 100,
 		},
 	}
