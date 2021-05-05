@@ -447,3 +447,179 @@ func TestADCA(t *testing.T) {
 		})
 	}
 }
+
+// Stack Operations
+func TestPUSH(t *testing.T) {
+	z := NewZ80()
+
+	tbl := []testcase{
+		{
+			name:       "PUSH AF",
+			program:    []byte{0xF5},
+			A:          0xCA,
+			F:          0xC0,
+			SP:         0x0100,
+			expectedSP: 0x00FE,
+			expectedF:  0xC0,
+			expected16: 0xCAC0,
+		},
+		{
+			name:       "PUSH BC",
+			program:    []byte{0xC5},
+			B:          0xDE,
+			C:          0xAD,
+			SP:         0x0100,
+			expectedSP: 0x00FE,
+			expected16: 0xDEAD,
+		},
+		{
+			name:       "PUSH DE",
+			program:    []byte{0xD5},
+			D:          0xBE,
+			E:          0xEF,
+			SP:         0x0100,
+			expectedSP: 0x00FE,
+			expected16: 0xBEEF,
+		},
+		{
+			name:       "PUSH HL",
+			program:    []byte{0xE5},
+			H:          0xF0,
+			L:          0x0D,
+			SP:         0x0100,
+			expectedSP: 0x00FE,
+			expected16: 0xF00D,
+		},
+	}
+
+	for _, tc := range tbl {
+		t.Run(tc.name, func(t *testing.T) {
+			z.Reset()
+			z.SP = tc.SP
+			z.A = tc.A
+			z.F = tc.F
+			z.B = tc.B
+			z.C = tc.C
+			z.D = tc.D
+			z.E = tc.E
+			z.H = tc.H
+			z.L = tc.L
+
+			z.LoadProgram(tc.program)
+
+			err := z.step()
+			if err != nil {
+				t.Errorf("expected no error, got: %s", err)
+			}
+
+			if z.SP != tc.expectedSP {
+				t.Errorf("expected SP %x, got %x", tc.expectedSP, z.SP)
+			}
+
+			hi := z.ram.Read(z.SP)
+			lo := z.ram.Read(z.SP + 1)
+
+			if value := pair(hi, lo); value != tc.expected16 {
+				t.Errorf("expected value %x, got %x", tc.expected16, value)
+			}
+
+			if z.F != tc.expectedF {
+				t.Errorf("expected flags %b, got %b", tc.expectedF, z.F)
+			}
+		})
+	}
+}
+
+func TestPOP(t *testing.T) {
+	z := NewZ80()
+
+	tbl := []testcase{
+		{
+			name:       "POP AF",
+			program:    []byte{0xF1},
+			input16:    0xCAC0,
+			SP:         0x0100,
+			expectedA:  0xCA,
+			expectedF:  0xC0,
+			expectedSP: 0x0102,
+		},
+		{
+			name:       "POP BC",
+			program:    []byte{0xC1},
+			input16:    0xDEAD,
+			SP:         0x0100,
+			expectedB:  0xDE,
+			expectedC:  0xAD,
+			expectedSP: 0x0102,
+		},
+		{
+			name:       "POP DE",
+			program:    []byte{0xD1},
+			input16:    0xBEEF,
+			SP:         0x0100,
+			expectedD:  0xBE,
+			expectedE:  0xEF,
+			expectedSP: 0x0102,
+		},
+		{
+			name:       "POP HL",
+			program:    []byte{0xE1},
+			input16:    0xF00D,
+			SP:         0x0100,
+			expectedH:  0xF0,
+			expectedL:  0x0D,
+			expectedSP: 0x0102,
+		},
+	}
+
+	for _, tc := range tbl {
+		t.Run(tc.name, func(t *testing.T) {
+			z.Reset()
+			z.SP = tc.SP
+			z.A = tc.A
+			z.F = tc.F
+			z.B = tc.B
+			z.C = tc.C
+			z.D = tc.D
+			z.E = tc.E
+			z.H = tc.H
+			z.L = tc.L
+
+			z.LoadProgram(tc.program)
+
+			hi := byte(tc.input16 / 0x100)
+			lo := byte(tc.input16 % 0x100)
+			z.ram.Write(z.SP, hi)
+			z.ram.Write(z.SP+1, lo)
+
+			err := z.step()
+			if err != nil {
+				t.Errorf("expected no error, got: %s", err)
+			}
+
+			if z.SP != tc.expectedSP {
+				t.Errorf("expected SP %x, got %x", tc.expectedSP, z.SP)
+			}
+
+			if eAF := pair(tc.expectedA, tc.expectedF); z.GetAF() != eAF {
+				t.Errorf("expected AF %x, got %x", eAF, z.GetAF())
+			}
+
+			if eBC := pair(tc.expectedB, tc.expectedC); z.GetBC() != eBC {
+				t.Errorf("expected BC %x, got %x", eBC, z.GetBC())
+			}
+
+			if eDE := pair(tc.expectedD, tc.expectedE); z.GetDE() != eDE {
+				t.Errorf("expected DE %x, got %x", eDE, z.GetDE())
+			}
+
+			if eHL := pair(tc.expectedH, tc.expectedL); z.GetHL() != eHL {
+				t.Errorf("expected HL %x, got %x", eHL, z.GetHL())
+			}
+
+			if z.F != tc.expectedF {
+				t.Errorf("expected flags %b, got %b", tc.expectedF, z.F)
+			}
+		})
+	}
+}

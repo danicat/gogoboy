@@ -6,7 +6,7 @@ import (
 
 // Z80 holds the internal representation of the Z80 CPU registers
 type Z80 struct {
-	PC                     uint16
+	PC, SP                 uint16
 	A, F, B, C, D, E, H, L byte
 	ram                    *MRAM
 	cycles                 int
@@ -17,6 +17,16 @@ type Z80 struct {
 func NewZ80() *Z80 {
 	r := NewMRAM()
 	return &Z80{
+		A:   0x01,
+		F:   0xB0,
+		B:   0x00,
+		C:   0x13,
+		D:   0x00,
+		E:   0xD8,
+		H:   0x01,
+		L:   0x4D,
+		PC:  0x100,
+		SP:  0xFFFE,
 		ram: r,
 	}
 }
@@ -33,6 +43,7 @@ func (z *Z80) LoadProgram(p []byte) {
 
 func (z *Z80) Reset() {
 	z.PC = 0
+	z.SP = 0xFFFE
 	z.A = 0
 	z.F = 0
 	z.B = 0
@@ -149,7 +160,48 @@ func (z *Z80) CFlag() bool {
 }
 
 func (z *Z80) fetch() byte {
-	op := z.ram.ReadAddr(z.PC)
+	op := z.ram.Read(z.PC)
 	z.PC++
 	return op
+}
+
+func (z *Z80) GetAF() uint16 {
+	return pair(z.A, z.F)
+}
+
+func (z *Z80) SetAF(v uint16) {
+	writePair(&z.A, &z.F, v)
+}
+
+func (z *Z80) GetBC() uint16 {
+	return pair(z.B, z.C)
+}
+
+func (z *Z80) SetBC(v uint16) {
+	writePair(&z.B, &z.C, v)
+}
+
+func (z *Z80) GetDE() uint16 {
+	return pair(z.D, z.E)
+}
+
+func (z *Z80) SetDE(v uint16) {
+	writePair(&z.D, &z.E, v)
+}
+
+func (z *Z80) GetHL() uint16 {
+	return pair(z.H, z.L)
+}
+
+func (z *Z80) SetHL(v uint16) {
+	writePair(&z.H, &z.L, v)
+}
+
+func pair(hi, lo byte) uint16 {
+	return uint16(hi)*0x100 + uint16(lo)
+}
+
+func writePair(hi, lo *byte, v uint16) {
+	*hi = byte(v / 0x100)
+	*lo = byte(v % 0x100)
 }

@@ -23,7 +23,7 @@ var opcodes = map[byte]struct {
 	0x7C: {"LD A, H", 4, func(z *Z80) { z.A = z.H }},
 	0x7D: {"LD A, L", 4, func(z *Z80) { z.A = z.L }},
 
-	0x66: {"LD H, (HL)", 8, func(z *Z80) { z.H = z.ram.ReadAddr8(z.H, z.L) }},
+	0x66: {"LD H, (HL)", 8, func(z *Z80) { z.H = z.ram.Read(z.GetHL()) }},
 
 	0x87: {"ADD A, A", 4, func(z *Z80) { z.A = z.add8(z.A, z.A, false) }},
 	0x80: {"ADD A, B", 4, func(z *Z80) { z.A = z.add8(z.A, z.B, false) }},
@@ -42,4 +42,18 @@ var opcodes = map[byte]struct {
 	0x8C: {"ADC A, H", 4, func(z *Z80) { z.A = z.add8(z.A, z.H, z.CFlag()) }},
 	0x8D: {"ADC A, L", 4, func(z *Z80) { z.A = z.add8(z.A, z.L, z.CFlag()) }},
 	0xCE: {"ADC A, #", 8, func(z *Z80) { z.A = z.add8(z.A, z.fetch(), z.CFlag()) }},
+
+	// 0xCC: {"CALL Z, nn", 12, func(z *Z80) {
+	// 	// push next instruction to the stack and jump to address nn (least significant byte first)
+	// }},
+
+	0xF5: {"PUSH AF", 16, func(z *Z80) { z.SP--; z.ram.Write(z.SP, z.F); z.SP--; z.ram.Write(z.SP, z.A) }},
+	0xC5: {"PUSH BC", 16, func(z *Z80) { z.SP--; z.ram.Write(z.SP, z.C); z.SP--; z.ram.Write(z.SP, z.B) }},
+	0xD5: {"PUSH DE", 16, func(z *Z80) { z.SP--; z.ram.Write(z.SP, z.E); z.SP--; z.ram.Write(z.SP, z.D) }},
+	0xE5: {"PUSH HL", 16, func(z *Z80) { z.SP--; z.ram.Write(z.SP, z.L); z.SP--; z.ram.Write(z.SP, z.H) }},
+
+	0xF1: {"POP AF", 16, func(z *Z80) { z.A = z.ram.Read(z.SP); z.SP++; z.F = z.ram.Read(z.SP); z.SP++ }},
+	0xC1: {"POP BC", 16, func(z *Z80) { z.B = z.ram.Read(z.SP); z.SP++; z.C = z.ram.Read(z.SP); z.SP++ }},
+	0xD1: {"POP DE", 16, func(z *Z80) { z.D = z.ram.Read(z.SP); z.SP++; z.E = z.ram.Read(z.SP); z.SP++ }},
+	0xE1: {"POP HL", 16, func(z *Z80) { z.H = z.ram.Read(z.SP); z.SP++; z.L = z.ram.Read(z.SP); z.SP++ }},
 }

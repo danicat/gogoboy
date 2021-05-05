@@ -5,6 +5,9 @@ import "testing"
 type testcase struct {
 	name           string
 	program        []byte
+	input16        uint16
+	PC             uint16
+	SP             uint16
 	A              byte
 	F              byte
 	B              byte
@@ -13,9 +16,16 @@ type testcase struct {
 	E              byte
 	H              byte
 	L              byte
+	expected16     uint16
 	expectedA      byte
+	expectedB      byte
+	expectedC      byte
+	expectedD      byte
+	expectedE      byte
 	expectedF      byte
 	expectedH      byte
+	expectedL      byte
+	expectedSP     uint16
 	expectedCycles int
 }
 

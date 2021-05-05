@@ -18,11 +18,10 @@ func (m *MRAM) LoadProgram(p []byte) {
 	m.ram = ram
 }
 
-func (m *MRAM) ReadAddr8(hi, lo byte) byte {
-	a := uint16(hi)*0x100 + uint16(lo)
-	return m.ReadAddr(a)
+func (m *MRAM) Read(addr uint16) byte {
+	return m.ram[addr]
 }
 
-func (m *MRAM) ReadAddr(a uint16) byte {
-	return m.ram[a]
+func (m *MRAM) Write(addr uint16, val byte) {
+	m.ram[addr] = val
 }
