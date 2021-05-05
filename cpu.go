@@ -36,9 +36,9 @@ func (z *Z80) SetMaxCycles(max int) {
 	z.maxCycles = max
 }
 
-func (z *Z80) LoadProgram(p []byte) {
-	z.ram.LoadProgram(p)
-	z.PC = 0
+func (z *Z80) LoadProgram(p []byte, addr uint16) {
+	z.PC = addr
+	z.ram.LoadProgram(p, addr)
 }
 
 func (z *Z80) Reset() {
@@ -204,4 +204,35 @@ func pair(hi, lo byte) uint16 {
 func writePair(hi, lo *byte, v uint16) {
 	*hi = byte(v / 0x100)
 	*lo = byte(v % 0x100)
+}
+
+func split(v uint16) (hi, lo byte) {
+	hi = byte(v / 0x100)
+	lo = byte(v % 0x100)
+	return
+}
+
+func (z *Z80) push(v uint16) {
+	hi, lo := split(v)
+	z.SP--
+	z.ram.Write(z.SP, lo)
+	z.SP--
+	z.ram.Write(z.SP, hi)
+}
+
+func (z *Z80) pop() uint16 {
+	hi := z.ram.Read(z.SP)
+	z.SP++
+	lo := z.ram.Read(z.SP)
+	z.SP++
+	return pair(hi, lo)
+}
+
+func (z *Z80) call(addr uint16) {
+	z.push(z.PC + 1)
+	z.jump(addr)
+}
+
+func (z *Z80) jump(addr uint16) {
+	z.PC = addr
 }

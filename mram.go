@@ -10,10 +10,10 @@ func NewMRAM() *MRAM {
 	return &MRAM{}
 }
 
-func (m *MRAM) LoadProgram(p []byte) {
+func (m *MRAM) LoadProgram(p []byte, addr uint16) {
 	var ram [MainRAMSize]byte
 	for i, b := range p {
-		ram[i] = b
+		ram[i+int(addr)] = b
 	}
 	m.ram = ram
 }

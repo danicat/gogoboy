@@ -6,7 +6,7 @@ func TestNOP(t *testing.T) {
 	input := []byte{0, 0}
 	expected := uint16(2)
 	z := NewZ80()
-	z.LoadProgram(input)
+	z.LoadProgram(input, 0)
 	z.step()
 	z.step()
 	if z.PC != expected {
@@ -19,7 +19,7 @@ func TestLDB(t *testing.T) {
 	input := []byte{0x06, 0xDE}
 	var expected byte = 0xDE
 	z := NewZ80()
-	z.LoadProgram(input)
+	z.LoadProgram(input, 0)
 	z.step()
 	if z.PC != 2 {
 		t.Fatalf("expected PC=%d, got PC=%d", 2, z.PC)
@@ -84,7 +84,7 @@ func TestLD(t *testing.T) {
 	for _, tc := range tbl {
 		t.Run(tc.name, func(t *testing.T) {
 			z.Reset()
-			z.LoadProgram(tc.program)
+			z.LoadProgram(tc.program, 0)
 			z.step()
 			if *tc.register != tc.expected {
 				t.Errorf("expected %x, got %x", tc.expected, *tc.register)
@@ -153,7 +153,7 @@ func TestLDA(t *testing.T) {
 			z.H = tc.H
 			z.L = tc.L
 
-			z.LoadProgram(tc.program)
+			z.LoadProgram(tc.program, 0)
 
 			err := z.step()
 			if err != nil {
@@ -202,7 +202,7 @@ func TestLDH(t *testing.T) {
 			z.H = tc.H
 			z.L = tc.L
 
-			z.LoadProgram(tc.program)
+			z.LoadProgram(tc.program, 0)
 
 			err := z.step()
 			if err != nil {
@@ -323,7 +323,7 @@ func TestADD(t *testing.T) {
 			z.H = tc.H
 			z.L = tc.L
 
-			z.LoadProgram(tc.program)
+			z.LoadProgram(tc.program, 0)
 
 			err := z.step()
 			if err != nil {
@@ -430,7 +430,7 @@ func TestADCA(t *testing.T) {
 			z.H = tc.H
 			z.L = tc.L
 
-			z.LoadProgram(tc.program)
+			z.LoadProgram(tc.program, 0)
 
 			err := z.step()
 			if err != nil {
@@ -505,7 +505,7 @@ func TestPUSH(t *testing.T) {
 			z.H = tc.H
 			z.L = tc.L
 
-			z.LoadProgram(tc.program)
+			z.LoadProgram(tc.program, 0)
 
 			err := z.step()
 			if err != nil {
@@ -585,7 +585,7 @@ func TestPOP(t *testing.T) {
 			z.H = tc.H
 			z.L = tc.L
 
-			z.LoadProgram(tc.program)
+			z.LoadProgram(tc.program, 0)
 
 			hi := byte(tc.input16 / 0x100)
 			lo := byte(tc.input16 % 0x100)

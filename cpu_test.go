@@ -33,7 +33,7 @@ func TestFetch(t *testing.T) {
 	input := []byte{0xDE, 0xAD}
 	expected := byte(0xDE)
 	z := NewZ80()
-	z.LoadProgram(input)
+	z.LoadProgram(input, 0)
 	op := z.fetch()
 	if op != expected {
 		t.Fatalf("expected %x, got %x", expected, op)
@@ -60,7 +60,7 @@ func TestCycleLimit(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			z.Reset()
 			z.SetMaxCycles(100)
-			z.LoadProgram(tc.program)
+			z.LoadProgram(tc.program, 0)
 			z.Run()
 
 			if z.A != tc.expectedA {
@@ -84,7 +84,7 @@ func TestNintendoBootProgram(t *testing.T) {
 	}
 
 	z := NewZ80()
-	z.LoadProgram(input)
+	z.LoadProgram(input, 0)
 	z.SetMaxCycles(1000)
 	err := z.Run()
 	if err != nil {
