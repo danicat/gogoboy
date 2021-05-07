@@ -43,6 +43,8 @@ var opcodes = map[byte]struct {
 	0x8D: {"ADC A, L", 4, func(z *Z80) { z.A = z.add8(z.A, z.L, z.CFlag()) }},
 	0xCE: {"ADC A, #", 8, func(z *Z80) { z.A = z.add8(z.A, z.fetch(), z.CFlag()) }},
 
+	// 0x0B: {"DEC BC", 8, func(z *Z80) {}},
+
 	0xCC: {"CALL Z, nn", 12, func(z *Z80) {
 		hi := z.fetch()
 		lo := z.fetch()

@@ -31,28 +31,3 @@ func (z *Z80) add8(l, r byte, carry bool) byte {
 
 	return byte(res)
 }
-
-func (z *Z80) push(v uint16) {
-	hi, lo := split(v)
-	z.SP--
-	z.ram.Write(z.SP, lo)
-	z.SP--
-	z.ram.Write(z.SP, hi)
-}
-
-func (z *Z80) pop() uint16 {
-	hi := z.ram.Read(z.SP)
-	z.SP++
-	lo := z.ram.Read(z.SP)
-	z.SP++
-	return pair(hi, lo)
-}
-
-func (z *Z80) call(addr uint16) {
-	z.push(z.PC + 1)
-	z.jump(addr)
-}
-
-func (z *Z80) jump(addr uint16) {
-	z.PC = addr
-}
