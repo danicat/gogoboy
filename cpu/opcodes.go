@@ -43,6 +43,11 @@ var opcodes = map[byte]struct {
 	0x8D: {"ADC A, L", 4, func(z *Z80) { z.A = z.add8(z.A, z.L, z.CFlag()) }},
 	0xCE: {"ADC A, #", 8, func(z *Z80) { z.A = z.add8(z.A, z.fetch(), z.CFlag()) }},
 
+	0x03: {"INC BC", 8, func(z *Z80) { z.inc(&z.B, &z.C) }},
+	0x13: {"INC DE", 8, func(z *Z80) { z.inc(&z.D, &z.E) }},
+	0x23: {"INC HL", 8, func(z *Z80) { z.inc(&z.H, &z.L) }},
+	0x33: {"INC SP", 8, func(z *Z80) { z.SP++ }},
+
 	0x0B: {"DEC BC", 8, func(z *Z80) { z.dec(&z.B, &z.C) }},
 	0x1B: {"DEC DE", 8, func(z *Z80) { z.dec(&z.D, &z.E) }},
 	0x2B: {"DEC HL", 8, func(z *Z80) { z.dec(&z.H, &z.L) }},
@@ -51,7 +56,7 @@ var opcodes = map[byte]struct {
 	0xCC: {"CALL Z, nn", 12, func(z *Z80) { z.call(z.ZFlag()) }},
 	0xC4: {"CALL NZ, nn", 12, func(z *Z80) { z.call(!z.ZFlag()) }},
 	0xDC: {"CALL C, nn", 12, func(z *Z80) { z.call(z.CFlag()) }},
-	0xD4: {"CALL CZ, nn", 12, func(z *Z80) { z.call(!z.CFlag()) }},
+	0xD4: {"CALL NC, nn", 12, func(z *Z80) { z.call(!z.CFlag()) }},
 
 	0xF5: {"PUSH AF", 16, func(z *Z80) { z.push(z.AF()) }},
 	0xC5: {"PUSH BC", 16, func(z *Z80) { z.push(z.BC()) }},

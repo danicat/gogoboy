@@ -37,3 +37,9 @@ func (z *Z80) dec(hi, lo *byte) {
 	val--
 	*hi, *lo = split(val)
 }
+
+func (z *Z80) inc(hi, lo *byte) {
+	val := pair(*hi, *lo)
+	val++
+	*hi, *lo = split(val)
+}

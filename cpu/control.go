@@ -7,10 +7,10 @@ func (z *Z80) call(flag bool) {
 
 	if flag {
 		z.push(z.PC + 1)
-		z.jump(addr)
+		z.PC = addr
 	}
 }
 
-func (z *Z80) jump(addr uint16) {
-	z.PC = addr
-}
+// func (z *Z80) jump(addr uint16) {
+// 	z.PC = addr
+// }

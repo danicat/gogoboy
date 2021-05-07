@@ -8,7 +8,7 @@ This project is a proof of concept of building emulators with test driven develo
 
 ## Current Status
 
-- CPU: 48 opcodes implemented (out of 256)
+- CPU: 52 opcodes implemented (out of 256)
 - CPU: PC implemented
 - CPU: 8 bit registers implemented: A, B, C, D, E, H, L
 - CPU(flags): Z, N, H and C implemented

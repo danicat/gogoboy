@@ -179,7 +179,7 @@ func TestADCA(t *testing.T) {
 	}
 }
 
-func TestDEC(t *testing.T) {
+func TestINC_DEC(t *testing.T) {
 	tbl := []testcase{
 		{
 			name:     "DEC BC",
@@ -204,6 +204,30 @@ func TestDEC(t *testing.T) {
 			program:  []byte{0x3B},
 			input:    Z80{SP: 0x0200},
 			expected: Z80{SP: 0x01FF},
+		},
+		{
+			name:     "INC BC",
+			program:  []byte{0x03},
+			input:    Z80{B: 0x01, C: 0xFF},
+			expected: Z80{B: 0x02, C: 0x00},
+		},
+		{
+			name:     "INC DE",
+			program:  []byte{0x13},
+			input:    Z80{D: 0x01, E: 0xFF},
+			expected: Z80{D: 0x02, E: 0x00},
+		},
+		{
+			name:     "INC HL",
+			program:  []byte{0x23},
+			input:    Z80{H: 0x01, L: 0xFF},
+			expected: Z80{H: 0x02, L: 0x00},
+		},
+		{
+			name:     "INC SP",
+			program:  []byte{0x33},
+			input:    Z80{SP: 0x01FF},
+			expected: Z80{SP: 0x0200},
 		},
 	}
 
