@@ -1,4 +1,4 @@
-package main
+package cpu
 
 var opcodes = map[byte]struct {
 	name   string
@@ -23,7 +23,7 @@ var opcodes = map[byte]struct {
 	0x7C: {"LD A, H", 4, func(z *Z80) { z.A = z.H }},
 	0x7D: {"LD A, L", 4, func(z *Z80) { z.A = z.L }},
 
-	0x66: {"LD H, (HL)", 8, func(z *Z80) { z.H = z.ram.Read(z.GetHL()) }},
+	0x66: {"LD H, (HL)", 8, func(z *Z80) { z.H = z.ram.Read(z.HL()) }},
 
 	0x87: {"ADD A, A", 4, func(z *Z80) { z.A = z.add8(z.A, z.A, false) }},
 	0x80: {"ADD A, B", 4, func(z *Z80) { z.A = z.add8(z.A, z.B, false) }},
@@ -51,10 +51,10 @@ var opcodes = map[byte]struct {
 		}
 	}},
 
-	0xF5: {"PUSH AF", 16, func(z *Z80) { z.push(z.GetAF()) }},
-	0xC5: {"PUSH BC", 16, func(z *Z80) { z.push(z.GetBC()) }},
-	0xD5: {"PUSH DE", 16, func(z *Z80) { z.push(z.GetDE()) }},
-	0xE5: {"PUSH HL", 16, func(z *Z80) { z.push(z.GetHL()) }},
+	0xF5: {"PUSH AF", 16, func(z *Z80) { z.push(z.AF()) }},
+	0xC5: {"PUSH BC", 16, func(z *Z80) { z.push(z.BC()) }},
+	0xD5: {"PUSH DE", 16, func(z *Z80) { z.push(z.DE()) }},
+	0xE5: {"PUSH HL", 16, func(z *Z80) { z.push(z.HL()) }},
 
 	0xF1: {"POP AF", 16, func(z *Z80) { z.SetAF(z.pop()) }},
 	0xC1: {"POP BC", 16, func(z *Z80) { z.SetBC(z.pop()) }},

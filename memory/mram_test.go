@@ -1,10 +1,14 @@
-package main
+package memory_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/danicat/gogoboy/memory"
+)
 
 func TestLoadProgram(t *testing.T) {
 	program := []byte{0, 1, 2, 3}
-	m := NewMRAM()
+	m := memory.NewMemory()
 	m.LoadProgram(program, 0)
 	b := m.Read(3)
 	if b != 3 {
