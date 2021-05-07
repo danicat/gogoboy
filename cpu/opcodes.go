@@ -45,13 +45,10 @@ var opcodes = map[byte]struct {
 
 	// 0x0B: {"DEC BC", 8, func(z *Z80) {}},
 
-	0xCC: {"CALL Z, nn", 12, func(z *Z80) {
-		hi := z.fetch()
-		lo := z.fetch()
-		if z.ZFlag() {
-			z.call(pair(hi, lo))
-		}
-	}},
+	0xCC: {"CALL Z, nn", 12, func(z *Z80) { z.call(z.ZFlag()) }},
+	0xC4: {"CALL NZ, nn", 12, func(z *Z80) { z.call(!z.ZFlag()) }},
+	0xDC: {"CALL C, nn", 12, func(z *Z80) { z.call(z.CFlag()) }},
+	0xD4: {"CALL CZ, nn", 12, func(z *Z80) { z.call(!z.CFlag()) }},
 
 	0xF5: {"PUSH AF", 16, func(z *Z80) { z.push(z.AF()) }},
 	0xC5: {"PUSH BC", 16, func(z *Z80) { z.push(z.BC()) }},
