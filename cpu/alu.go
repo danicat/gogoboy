@@ -31,3 +31,9 @@ func (z *Z80) add8(l, r byte, carry bool) byte {
 
 	return byte(res)
 }
+
+func (z *Z80) dec(hi, lo *byte) {
+	val := pair(*hi, *lo)
+	val--
+	*hi, *lo = split(val)
+}

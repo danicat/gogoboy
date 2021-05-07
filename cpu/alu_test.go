@@ -178,3 +178,66 @@ func TestADCA(t *testing.T) {
 		})
 	}
 }
+
+func TestDEC(t *testing.T) {
+	tbl := []testcase{
+		{
+			name:     "DEC BC",
+			program:  []byte{0x0B},
+			input:    Z80{B: 0x02, C: 0x00},
+			expected: Z80{B: 0x01, C: 0xFF},
+		},
+		{
+			name:     "DEC DE",
+			program:  []byte{0x1B},
+			input:    Z80{D: 0x02, E: 0x00},
+			expected: Z80{D: 0x01, E: 0xFF},
+		},
+		{
+			name:     "DEC HL",
+			program:  []byte{0x2B},
+			input:    Z80{H: 0x02, L: 0x00},
+			expected: Z80{H: 0x01, L: 0xFF},
+		},
+		{
+			name:     "DEC SP",
+			program:  []byte{0x3B},
+			input:    Z80{SP: 0x0200},
+			expected: Z80{SP: 0x01FF},
+		},
+	}
+
+	for _, tc := range tbl {
+		t.Run(tc.name, func(t *testing.T) {
+			m := memory.NewMemory()
+			tc.input.ram = m
+			tc.input.LoadProgram(tc.program, 0)
+
+			tc.input.step()
+
+			if tc.input.SP != tc.expected.SP {
+				t.Errorf("expected SP %x, got %x", tc.expected.SP, tc.input.SP)
+			}
+
+			if tc.input.AF() != tc.expected.AF() {
+				t.Errorf("expected AF %x, got %x", tc.expected.AF(), tc.input.AF())
+			}
+
+			if tc.input.BC() != tc.expected.BC() {
+				t.Errorf("expected BC %x, got %x", tc.expected.BC(), tc.input.BC())
+			}
+
+			if tc.input.DE() != tc.expected.DE() {
+				t.Errorf("expected DE %x, got %x", tc.expected.DE(), tc.input.DE())
+			}
+
+			if tc.input.HL() != tc.expected.HL() {
+				t.Errorf("expected HL %x, got %x", tc.expected.HL(), tc.input.HL())
+			}
+
+			if tc.input.F != tc.expected.F {
+				t.Errorf("expected flags %b, got %b", tc.expected.F, tc.input.F)
+			}
+		})
+	}
+}
