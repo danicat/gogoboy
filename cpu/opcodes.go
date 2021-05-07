@@ -7,6 +7,7 @@ var opcodes = map[byte]struct {
 }{
 	0x00: {"NOP", 4, func(z *Z80) {}},
 
+	// 8-Bit Loads
 	0x3E: {"LD A, n", 8, func(z *Z80) { z.A = z.fetch() }},
 	0x06: {"LD B, n", 8, func(z *Z80) { z.B = z.fetch() }},
 	0x0E: {"LD C, n", 8, func(z *Z80) { z.C = z.fetch() }},
@@ -25,6 +26,13 @@ var opcodes = map[byte]struct {
 
 	0x66: {"LD H, (HL)", 8, func(z *Z80) { z.H = z.ram.Read(z.HL()) }},
 
+	// 16-Bit Loads
+	0x01: {"LD BC, nn", 12, func(z *Z80) { z.B = z.fetch(); z.C = z.fetch() }},
+	0x11: {"LD DE, nn", 12, func(z *Z80) { z.D = z.fetch(); z.E = z.fetch() }},
+	0x21: {"LD HL, nn", 12, func(z *Z80) { z.H = z.fetch(); z.L = z.fetch() }},
+	0x31: {"LD SP, nn", 12, func(z *Z80) { hi := z.fetch(); lo := z.fetch(); z.SP = pair(hi, lo) }},
+
+	// 8-Bit ALU
 	0x87: {"ADD A, A", 4, func(z *Z80) { z.A = z.add8(z.A, z.A, false) }},
 	0x80: {"ADD A, B", 4, func(z *Z80) { z.A = z.add8(z.A, z.B, false) }},
 	0x81: {"ADD A, C", 4, func(z *Z80) { z.A = z.add8(z.A, z.C, false) }},
@@ -53,6 +61,7 @@ var opcodes = map[byte]struct {
 	0x2B: {"DEC HL", 8, func(z *Z80) { z.dec(&z.H, &z.L) }},
 	0x3B: {"DEC SP", 8, func(z *Z80) { z.SP-- }},
 
+	// Flow control
 	0xCC: {"CALL Z, nn", 12, func(z *Z80) { z.call(z.ZFlag()) }},
 	0xC4: {"CALL NZ, nn", 12, func(z *Z80) { z.call(!z.ZFlag()) }},
 	0xDC: {"CALL C, nn", 12, func(z *Z80) { z.call(z.CFlag()) }},
