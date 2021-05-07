@@ -196,24 +196,49 @@ func TestLD16(t *testing.T) {
 			program:  []byte{0x01, 0x01, 0xFF},
 			input:    Z80{},
 			expected: Z80{B: 0x01, C: 0xFF},
+			cycles:   12,
 		},
 		{
 			name:     "LD DE, nn",
 			program:  []byte{0x11, 0x01, 0xFF},
 			input:    Z80{},
 			expected: Z80{D: 0x01, E: 0xFF},
+			cycles:   12,
 		},
 		{
 			name:     "LD HL, nn",
 			program:  []byte{0x21, 0x01, 0xFF},
 			input:    Z80{},
 			expected: Z80{H: 0x01, L: 0xFF},
+			cycles:   12,
 		},
 		{
 			name:     "LD SP, nn",
 			program:  []byte{0x31, 0x01, 0xFF},
 			input:    Z80{},
 			expected: Z80{SP: 0x01FF},
+			cycles:   12,
+		},
+		{
+			name:     "LD SP, HL",
+			program:  []byte{0xF9},
+			input:    Z80{H: 0xFF, L: 0xFE},
+			expected: Z80{H: 0xFF, L: 0xFE, SP: 0xFFFE},
+			cycles:   8,
+		},
+		{
+			name:     "LDHL SP, n",
+			program:  []byte{0xF8, 0x03},
+			input:    Z80{SP: 0x01FE},
+			expected: Z80{F: 0b00100000, H: 0x02, L: 0x01, SP: 0x01FE},
+			cycles:   12,
+		},
+		{
+			name:     "LD (nn), SP",
+			program:  []byte{0x08, 0x00, 0x04, 0x01, 0xFF, 0xFF},
+			input:    Z80{SP: 0xAAAA},
+			expected: Z80{B: 0xAA, C: 0xAA, SP: 0xAAAA},
+			cycles:   20 + 12,
 		},
 	}
 
@@ -222,8 +247,8 @@ func TestLD16(t *testing.T) {
 			m := memory.NewMemory()
 			tc.input.ram = m
 			tc.input.LoadProgram(tc.program, 0)
-
-			tc.input.step()
+			tc.input.SetMaxCycles(tc.cycles)
+			tc.input.Run()
 
 			if tc.input.SP != tc.expected.SP {
 				t.Errorf("expected SP %x, got %x", tc.expected.SP, tc.input.SP)

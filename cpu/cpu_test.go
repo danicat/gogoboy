@@ -13,6 +13,7 @@ type testcase struct {
 	expected   Z80
 	input16    uint16
 	expected16 uint16
+	cycles     int
 }
 
 func TestFetch(t *testing.T) {

@@ -25,3 +25,15 @@ func (m *Memory) Read(addr uint16) byte {
 func (m *Memory) Write(addr uint16, val byte) {
 	m.data[addr] = val
 }
+
+func (m *Memory) Write16(addr uint16, val uint16) {
+	hi, lo := split(val)
+	m.data[addr] = hi
+	m.data[addr+1] = lo
+}
+
+func split(v uint16) (hi, lo byte) {
+	hi = byte(v / 0x100)
+	lo = byte(v % 0x100)
+	return
+}

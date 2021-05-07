@@ -32,6 +32,37 @@ var opcodes = map[byte]struct {
 	0x21: {"LD HL, nn", 12, func(z *Z80) { z.H = z.fetch(); z.L = z.fetch() }},
 	0x31: {"LD SP, nn", 12, func(z *Z80) { hi := z.fetch(); lo := z.fetch(); z.SP = pair(hi, lo) }},
 
+	0xF9: {"LD SP, HL", 8, func(z *Z80) { z.SP = pair(z.H, z.L) }},
+
+	0xF8: {"LD SP, HL", 12, func(z *Z80) {
+		n := uint(z.fetch())
+		SP := uint(z.SP)
+		res := SP + n
+
+		z.ResetZFlag()
+		z.ResetNFlag()
+
+		if res > 0xFFFF {
+			z.SetCFlag()
+		} else {
+			z.ResetCFlag()
+		}
+
+		if SP&0x00FF+n > 0xFF {
+			z.SetHFlag()
+		} else {
+			z.ResetHFlag()
+		}
+
+		z.H, z.L = split(uint16(res))
+	}},
+
+	0x08: {"LD (nn), SP", 20, func(z *Z80) {
+		hi := z.fetch()
+		lo := z.fetch()
+		z.ram.Write16(pair(hi, lo), z.SP)
+	}},
+
 	// 8-Bit ALU
 	0x87: {"ADD A, A", 4, func(z *Z80) { z.A = z.add8(z.A, z.A, false) }},
 	0x80: {"ADD A, B", 4, func(z *Z80) { z.A = z.add8(z.A, z.B, false) }},
